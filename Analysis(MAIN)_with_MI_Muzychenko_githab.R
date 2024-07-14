@@ -240,16 +240,32 @@ predM
 # Create blots object
 blots <- make.blots(df)
 # Exclude 3 through 4 from School donor pool
-blots$School$exclude <- c("3","4")
-# Exclude 1, 3, and 4 from School donor pool (school=2)
-# blots$School$exclude <- c("1","3","4")
+ blots$School$exclude <- c("3","4")
 # Exclude 2, 3, and 4 from School donor pool (school=1)
 # blots$School$exclude <- c("2","3","4")
+# Exclude 1, 3, and 4 from School donor pool (school=2)
+# blots$School$exclude <- c("1","3","4")
+
 
 imp <- mice(df, m =20, method = "pmm", pred =predM,
             blots = blots,  print = TRUE)
 
 blots$School$exclude %in% unlist(c(imp$imp$School)) # MUST be all FALSE
+
+#recode School into 3 dummy-variables
+
+library(dplyr)
+
+full.impdata <- complete(imp, 'long', include = TRUE) %>%
+  mutate(School1_2 = if_else(School== 2, 1, 0))
+imp <- as.mids(full.impdata)
+full.impdata <- complete(imp, 'long', include = TRUE) %>%
+  mutate(School1_3 = if_else(School== 3, 1, 0))
+imp <- as.mids(full.impdata)
+full.impdata <- complete(imp, 'long', include = TRUE) %>%
+  mutate(School1_4 = if_else(School== 4, 1, 0))
+imp <- as.mids(full.impdata)
+
 
 #### Safe imputed datasets to dataframes####
 imp_n1<-complete(imp,1)
@@ -712,7 +728,8 @@ library(semTools)
 input.data.path <- paste0(dirname(rstudioapi::getSourceEditorContext()$path), "/")
 setwd(input.data.path)
 
-load("imp_mice.RData")
+load("imp_mice_short.RData")
+
 
 #### Extract factor lodgings from imputed data sets.####
 model_CMB<-'ES =~ es1 + es2 + es3 + es4 + es5 + es6 + es7 + es8 + es9 + es10
@@ -803,7 +820,7 @@ class(data)
 #### Correlation analysis to choose covariates #####
 library(miceadds)
 library(rstatix)
-corr<-micombine.cor(data, variables=c(85:89, 92, 95:100), conf.level=0.95,
+corr<-micombine.cor(data, variables=c(85:89, 92, 95:103), conf.level=0.95,
               method="spearman", nested=FALSE)
 table<-attr(corr, "r_matrix")
 corr<-corr[,-c(4:8)]
@@ -865,7 +882,8 @@ SOC~a*ES+c12*gender
 CCA ~ b*ES + c*SOC 
 + c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c63*age
 AS ~ d* ES + e*SOC + f*CCA  
-+ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School
++ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 
 #idirect
 indirect_ES := b*f
@@ -918,7 +936,8 @@ model_alternative <- '
 ES~ c11*gender
 SOC~a*ES+c12*gender 
 AS ~ b*ES + c*SOC 
-+ c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c64*age + c74*School
++ c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 CCA ~ d* ES + e*SOC + f*AS 
 + c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c63*age
 
@@ -953,7 +972,8 @@ SOC~a*ES+c12*gender
 CCA ~ b*ES + m1*CCM + c*SOC 
 + c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c63*age
 AS ~ d* ES + m2*CCM + e*SOC + f*CCA 
-+ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School
++ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 
 
 ##account for relationships(additional to improve the model fit)
@@ -975,7 +995,8 @@ SOC~a*ES+c12*gender
 CCA ~ b*ES + m1*CCM + m11*ES:CCM + c*SOC + m12*SOC:CCM
 + c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c63*age
 AS ~ d* ES + m2*CCM + m21*ES:CCM + e*SOC + m22*SOC:CCM + f*CCA 
-+ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School
++ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 
 
 #idirect

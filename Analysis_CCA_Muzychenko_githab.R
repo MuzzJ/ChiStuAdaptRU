@@ -202,6 +202,29 @@ df2<-df2[!is.na(df2$soc13),]
 
 summary(df$School)
 
+
+df2$School1_2<-ifelse(df2$School==2,1,0)
+df2$School1_3<-ifelse(df2$School==3,1,0)
+df2$School1_4<-ifelse(df2$School==4,1,0)
+
+model_CMB<-'ES =~ es1 + es2 + es3 + es4 + es5 + es6 + es7 + es8 + es9 + es10
+                SOC =~ soc4 + soc6 + soc8 + soc9
+                        + soc11 + soc12 + soc13
+                CCM =~ ccm1 + ccm2 + ccm3 + ccm4 + ccm5
+                CCA =~ cca1 + cca2 + cca3
+                AS =~ as1 + as2 + as3
+                A=~a1+a2+a3+a4
+method=~es1 + es2 + es3 + es4 + es5 + es6 + es7 + es8 + es9 + es10 +
+soc4 + soc6 + soc8 + soc9 + soc11 + soc12 + soc13 +
+ccm1 + ccm2 + ccm3 + ccm4 + ccm5 + cca1 + cca2 + cca3 + as1 + as2 + as3+
+a1+a2+a3+a4
+method~~0*ES
+method~~0*SOC
+method~~0*CCM
+method~~0*CCA
+method~~0*AS
+method~~0*A
+'
 fit_imp1 <- lavaan::cfa(model_CMB, data = df2)
 fscores <- lavPredict(fit_imp1 , type="lv", method="regression")
 df2<-cbind(df2,fscores)
@@ -220,7 +243,8 @@ SOC~a*ES+c12*gender
 CCA ~ b*ES + c*SOC 
 + c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c63*age
 AS ~ d* ES + e*SOC + f*CCA  
-+ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School
++ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 
 #idirect
 indirect_ES := b*f
@@ -270,7 +294,8 @@ model_alternative <- '
 ES~ c11*gender
 SOC~a*ES+c12*gender 
 AS ~ b*ES + c*SOC 
-+ c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c64*age + c74*School
++ c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 CCA ~ d* ES + e*SOC + f*AS 
 + c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c63*age
 
@@ -302,7 +327,8 @@ SOC~a*ES+c12*gender
 CCA ~ b*ES + m1*CCM + c*SOC 
 + c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c63*age
 AS ~ d* ES + m2*CCM + e*SOC + f*CCA 
-+ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School
++ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 
 ##account for relationships
 CCM~ES
@@ -324,7 +350,8 @@ SOC~a*ES+c12*gender
 CCA ~ b*ES + m1*CCM + m11*ES:CCM + c*SOC + m12*SOC:CCM
 + c13*gender + c23*language + c33*ses + c43*exchProg + c53*cctraindue + c63*age
 AS ~ d* ES + m2*CCM + m21*ES:CCM + e*SOC + m22*SOC:CCM + f*CCA 
-+ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School
++ c14*gender + c24*language + c34*ses + c44*exchProg + c54*cctraindue + c64*age + c74*School1_2+ 
+c84*School1_3+c94*School1_4
 
 
 #idirect
